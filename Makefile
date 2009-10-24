@@ -1,9 +1,8 @@
-MXMLC = /opt/flex/bin/mxmlc
+MXMLC = mxmlc
 
 MFLAGS = -compiler.source-path=src \
          -debug \
-         -warnings \
-         -use-network=false
+         -warnings
 
 
 TARGET  = PseudoSiege.swf
