@@ -8,7 +8,7 @@ REQUIRES
 ========
 
 HARDWARE:
-- A Flash-compatible webcam.
+- A Flash-compatible webcam. For Linux, see: http://linux-uvc.berlios.de/#devices
 - A printed copy of the marker.pdf
 
 EXTERNAL:
