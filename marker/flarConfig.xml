@@ -7,9 +7,9 @@
 	<flarSourceSettings
 		sourceWidth="320"
 		sourceHeight="240"
-		displayWidth="640"
-		displayHeight="480"
-		framerate="30"
+		displayWidth="320"
+		displayHeight="240"
+		framerate="12"
 		downsampleRatio="1" />
 
 	<!-- miscellaneous FLARManager settings -->
