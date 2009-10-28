@@ -16,8 +16,10 @@ package {
 	import org.papervision3d.view.Viewport3D;
 
     import org.papervision3d.objects.primitives.Cube;
+    import org.papervision3d.objects.primitives.Sphere;
 	import org.papervision3d.materials.shadematerials.FlatShadeMaterial;
 	import org.papervision3d.materials.utils.MaterialsList;
+    import org.papervision3d.core.math.Number3D;
 	
 	/**
 	 * FLARManager_Tutorial3D demonstrates how to display a Collada-formatted model
@@ -42,7 +44,20 @@ package {
 		
 		private var models:Vector.<DisplayObject3D>;
         private var num_markers:int;
+
+
+        private var state:int;
+        static private var STATE_NULL:int = 0;
+        static private var STATE_HOLD:int = 1;
+        static private var STATE_SWING:int = 2;
+        static private var STATE_FLY:int = 3;
+        static private var STATE_DROP:int = 4;
+
+        private var angle:Number;
+        private var angleSpeed:Number;
+        private var speed:Number3D;
 		
+        private var stone:DisplayObject3D;
 		
 		public function AugmentedReality () {
 			// pass the path to the FLARManager xml config file into the FLARManager constructor.
@@ -55,8 +70,9 @@ package {
 
             this.num_markers = 12; // markers on the config // FIXME pick from this.flarManager somehow
             this.models = new Vector.<DisplayObject3D>();
-            this.flarManager.markerRemovalDelay = 12; // frames
-			
+            this.flarManager.markerRemovalDelay = 6; // frames
+            this.state = STATE_NULL;
+            
 			// add FLARManager.flarSource to the display list to display the video capture.
 			this.addChild(Sprite(this.flarManager.flarSource));
 			
@@ -101,12 +117,17 @@ package {
             this.models.push(model);
             this.scene3D.addChild(model);
 */
+            var fmat:FlatShadeMaterial = new FlatShadeMaterial( this.pointLight3D, 
+                Math.floor(Math.random()*0xffffff)
+            ); 					
+            this.stone = new Sphere(fmat, 10);
+            this.stone.visible = false;
+            this.scene3D.addChild(stone);
 
 			// create a container for the model, that will accept matrix transformations.
             for(var i:int=0; i<num_markers; ++i)
             {
-                var fmat:FlatShadeMaterial = new FlatShadeMaterial( this.pointLight3D, 
-                    Math.floor(Math.random()*0xffffff), 
+                fmat = new FlatShadeMaterial( this.pointLight3D, 
                     Math.floor(Math.random()*0xffffff)
                 ); 					
 				var cube:Cube = new Cube( new MaterialsList( {all: fmat} ) , 20 , 20 , 20 ); 
@@ -125,7 +146,20 @@ package {
 		
 		private function onMarkerChange (ev:FLARMarkerEvent) :void {
 			trace("["+ev.marker.patternId+"] "+ev.type);
-			this.models[ev.marker.patternId].visible = ev.type !=  FLARMarkerEvent.MARKER_REMOVED;
+			//this.models[ev.marker.patternId].visible = ev.type !=  FLARMarkerEvent.MARKER_REMOVED;
+			this.models[ev.marker.patternId].visible = true;
+            
+            if(ev.marker.patternId == 0) {
+                if(ev.type ==  FLARMarkerEvent.MARKER_REMOVED) {
+                    this.state = STATE_SWING;
+                    this.angle = 0;
+                    this.angleSpeed = 0;
+                } else {
+                    if(this.state == STATE_SWING) {
+                        this.state = STATE_FLY;
+                    }
+                }
+            }
 		}
 		
 		private function onEnterFrame (ev:Event) :void {
@@ -138,6 +172,35 @@ package {
                     this.flarManager.activeMarkers[i].transformMatrix
                 );
 			}
+
+            if(this.state == STATE_SWING) {
+                this.stone.visible = true;
+
+                this.angleSpeed += 3;
+                this.angle += this.angleSpeed;
+
+                if (this.angle > 180)
+                    this.angle = 180;
+
+                this.stone.copyTransform(this.models[0]);
+                this.stone.roll(90);
+                this.stone.pitch(180-this.angle);
+                this.stone.moveUp(40);
+
+                trace(this.angle)
+
+                if (this.angle >= 180)
+                    this.state = STATE_DROP;
+            } else if(this.state == STATE_FLY) {
+                trace(this.angleSpeed+ " : "+
+                    this.stone.x+", "+
+                    this.stone.y+", "+
+                    this.stone.z+", ")
+                this.stone.moveForward(-this.angleSpeed);
+                this.stone.pitch(-2);
+                if(this.stone.y < 0)
+                    this.state = STATE_DROP;
+            }
 			
 			// update the Papervision3D view.
 			this.renderEngine.render();
