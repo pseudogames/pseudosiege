@@ -55,7 +55,7 @@ sed -i 's/\r//g' `file bin/* | grep text | cut -d : -f 1` # remove bad line-endi
 Add it to the system PATH:
 
 echo 'export PATH=$PATH:/opt/flex/bin' > /etc/profile.d/adobe-flex.sh
-chmox +x /etc/profile.d/adobe-flex.sh                     # enable it to run on startup
+chmod +x /etc/profile.d/adobe-flex.sh                     # enable it to run on startup
 . /etc/profile.d/adobe-flex.sh
 
 
